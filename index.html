@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cutlab — Dashboard OFM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080C14;
+  --surface:#0D1322;
+  --surface-2:#111827;
+  --border:rgba(255,255,255,0.07);
+  --border-bright:rgba(255,255,255,0.14);
+  --text:#F1F5F9;
+  --muted:#64748B;
+  --muted-2:#475569;
+  --accent:#3B82F6;
+  --accent-2:#6366F1;
+  --green:#10B981;
+  --red:#EF4444;
+  --yellow:#F59E0B;
+  --font:'Geist',sans-serif;
+  --mono:'Geist Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  line-height:1.5;
+}
+
+/* DOT GRID BACKGROUND */
+body::after{
+  content:'';
+  position:fixed;inset:0;z-index:0;
+  pointer-events:none;
+  background-image:radial-gradient(circle, rgba(255,255,255,.18) 1px, transparent 1px);
+  background-size:28px 28px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, rgba(0,0,0,.6) 0%, transparent 100%);
+  -webkit-mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, rgba(0,0,0,.6) 0%, transparent 100%);
+}
+
+/* NOISE GRAIN */
+body::before{
+  content:'';
+  position:fixed;inset:0;z-index:100;
+  pointer-events:none;
+  opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px;
+  mix-blend-mode:overlay;
+}
+
+/* NAV */
+nav,section,.hero,.dashboard-wrap,.split,.cta-section,footer{position:relative;z-index:1}
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;
+  border-bottom:1px solid var(--border);
+  background:rgba(8,12,20,.85);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+.nav-logo{
+  font-size:18px;font-weight:700;letter-spacing:-0.03em;color:var(--text);
+  display:flex;align-items:center;gap:8px;
+}
+.nav-logo-mark{
+  width:28px;height:28px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;color:#fff;
+}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:14px;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-login{
+  font-size:13px;font-weight:500;
+  color:var(--accent);
+  background:transparent;
+  border:1px solid var(--accent);
+  padding:7px 16px;border-radius:8px;
+  cursor:pointer;transition:all .2s;
+  text-decoration:none;letter-spacing:-.01em;
+}
+.nav-login:hover{background:rgba(59,130,246,.08);color:var(--text)}
+.nav-cta{
+  font-size:13px;font-weight:600;color:#fff;
+  background:var(--accent);
+  border:none;padding:8px 18px;border-radius:8px;
+  cursor:pointer;transition:all .2s;
+  text-decoration:none;letter-spacing:-.01em;
+}
+.nav-cta:hover{background:#2563EB;transform:translateY(-1px)}
+
+/* HERO */
+.hero{
+  min-height:100dvh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;
+  padding:120px 24px 80px;
+  position:relative;overflow:hidden;
+}
+.hero-glow{
+  position:absolute;top:10%;left:50%;transform:translateX(-50%);
+  width:700px;height:400px;
+  background:radial-gradient(ellipse,rgba(59,130,246,.15) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:11px;font-weight:500;
+  color:var(--accent);letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid rgba(59,130,246,.3);
+  padding:5px 12px;border-radius:999px;
+  background:rgba(59,130,246,.08);
+  margin-bottom:28px;
+}
+.hero-badge-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+h1{
+  font-size:clamp(2.8rem,6vw,5.2rem);
+  font-weight:800;
+  letter-spacing:-0.04em;
+  line-height:1.05;
+  color:var(--text);
+  max-width:800px;
+  margin-bottom:20px;
+}
+h1 span.accent{
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{
+  font-size:17px;color:var(--muted);max-width:500px;line-height:1.65;
+  margin-bottom:40px;font-weight:400;
+}
+.hero-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+.btn-primary{
+  font-size:14px;font-weight:600;color:#fff;
+  background:var(--accent);border:none;
+  padding:12px 28px;border-radius:10px;cursor:pointer;
+  transition:all .25s cubic-bezier(.25,1,.5,1);
+  letter-spacing:-.01em;text-decoration:none;
+  box-shadow:0 0 0 1px rgba(59,130,246,.3),0 8px 24px -4px rgba(59,130,246,.35);
+}
+.btn-primary:hover{background:#2563EB;transform:translateY(-2px);box-shadow:0 0 0 1px rgba(59,130,246,.4),0 14px 32px -4px rgba(59,130,246,.45)}
+.btn-primary:active{transform:translateY(0);box-shadow:none}
+.btn-ghost{
+  font-size:14px;font-weight:500;color:var(--muted);
+  background:transparent;border:1px solid var(--border-bright);
+  padding:12px 24px;border-radius:10px;cursor:pointer;
+  transition:all .25s;text-decoration:none;letter-spacing:-.01em;
+}
+.btn-ghost:hover{color:var(--text);border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.04)}
+.hero-trust{
+  margin-top:32px;font-size:12px;color:var(--muted-2);
+  font-family:var(--mono);letter-spacing:.04em;
+  display:flex;align-items:center;gap:10px;
+}
+.trust-sep{width:1px;height:12px;background:var(--border-bright)}
+
+/* DASHBOARD PREVIEW */
+.dashboard-wrap{
+  max-width:1100px;margin:0 auto 100px;
+  padding:0 24px;
+}
+.dashboard-frame{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:
+    0 40px 80px -20px rgba(0,0,0,.8),
+    0 0 0 1px rgba(255,255,255,.04),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  opacity:0;transform:translateY(40px);
+  transition:opacity .8s ease,transform .8s cubic-bezier(.16,1,.3,1);
+}
+.dashboard-frame.visible{opacity:1;transform:translateY(0)}
+.frame-topbar{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,.02);
+}
+.frame-dot{width:10px;height:10px;border-radius:50%}
+.frame-dot.r{background:#EF4444}
+.frame-dot.y{background:#F59E0B}
+.frame-dot.g{background:#10B981}
+.frame-url{
+  margin-left:8px;font-family:var(--mono);font-size:11px;color:var(--muted-2);
+  padding:4px 12px;background:rgba(255,255,255,.04);border-radius:6px;border:1px solid var(--border);
+}
+.frame-body{padding:20px;display:grid;grid-template-columns:200px 1fr;gap:16px;min-height:420px}
+
+/* SIDEBAR */
+.sidebar{
+  display:flex;flex-direction:column;gap:4px;
+  border-right:1px solid var(--border);padding-right:16px;
+}
+.sb-label{font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.1em;text-transform:uppercase;padding:8px 8px 4px;font-weight:600}
+.sb-item{
+  display:flex;align-items:center;gap:8px;
+  font-size:12.5px;color:var(--muted);
+  padding:7px 8px;border-radius:7px;cursor:pointer;
+  transition:all .15s;
+}
+.sb-item:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.sb-item.active{background:rgba(59,130,246,.12);color:var(--accent)}
+.sb-icon{font-size:14px;width:18px;text-align:center}
+
+/* MAIN PANEL */
+.main-panel{display:flex;flex-direction:column;gap:14px}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi-card{
+  background:var(--surface-2);border:1px solid var(--border);
+  border-radius:10px;padding:14px;
+}
+.kpi-label{font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.kpi-value{font-size:22px;font-weight:700;letter-spacing:-.03em;margin-bottom:2px}
+.kpi-delta{font-family:var(--mono);font-size:11px;color:var(--green)}
+.kpi-delta.neg{color:var(--red)}
+
+.models-table{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.table-head{
+  display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;
+  padding:9px 14px;border-bottom:1px solid var(--border);
+  font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.08em;text-transform:uppercase;gap:8px;
+}
+.table-row{
+  display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;
+  padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.03);
+  gap:8px;align-items:center;
+  transition:background .15s;
+}
+.table-row:last-child{border-bottom:none}
+.table-row:hover{background:rgba(255,255,255,.03)}
+.model-name{font-size:12.5px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px}
+.model-avatar{
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.table-cell{font-family:var(--mono);font-size:12px;color:var(--text)}
+.table-cell.muted{color:var(--muted-2)}
+.badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:5px;font-weight:600}
+.badge.of{background:rgba(59,130,246,.15);color:#60A5FA;border:1px solid rgba(59,130,246,.25)}
+.badge.mym{background:rgba(99,102,241,.15);color:#A5B4FC;border:1px solid rgba(99,102,241,.25)}
+.badge.both{background:rgba(16,185,129,.1);color:#6EE7B7;border:1px solid rgba(16,185,129,.2)}
+
+/* SECTIONS */
+section{padding:80px 24px;max-width:1100px;margin:0 auto}
+.section-label{
+  font-family:var(--mono);font-size:11px;color:var(--accent);
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;
+  font-weight:600;
+}
+h2{font-size:clamp(1.8rem,4vw,3rem);font-weight:700;letter-spacing:-.04em;line-height:1.1;margin-bottom:14px}
+.section-sub{font-size:16px;color:var(--muted);max-width:480px;line-height:1.65}
+
+/* FEATURES BENTO */
+.bento{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto;gap:12px;margin-top:48px}
+.bento-cell{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;
+  opacity:0;transform:translateY(24px);
+  transition:opacity .6s ease,transform .6s cubic-bezier(.16,1,.3,1);
+  transition-delay:var(--d,0s);
+}
+.bento-cell.visible{opacity:1;transform:translateY(0)}
+.bento-cell.wide{grid-column:span 2}
+.bento-cell.tall{grid-row:span 2}
+.bento-icon{
+  width:36px;height:36px;border-radius:9px;margin-bottom:14px;
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+}
+.bento-title{font-size:15px;font-weight:600;letter-spacing:-.02em;margin-bottom:6px}
+.bento-desc{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* MINI CHART inside bento */
+.mini-chart{margin-top:16px;display:flex;align-items:flex-end;gap:4px;height:48px}
+.bar{border-radius:3px 3px 0 0;width:100%;background:rgba(59,130,246,.35);transition:all .3s}
+.bar:hover{background:rgba(59,130,246,.7)}
+
+/* PLATFORM LOGOS */
+.platform-row{display:flex;align-items:center;gap:10px;margin-top:16px}
+.platform-pill{
+  font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 12px;border-radius:8px;
+  display:flex;align-items:center;gap:6px;
+}
+.platform-pill.of{background:rgba(59,130,246,.1);color:#60A5FA;border:1px solid rgba(59,130,246,.2)}
+.platform-pill.mym{background:rgba(99,102,241,.1);color:#A5B4FC;border:1px solid rgba(99,102,241,.2)}
+
+/* HOW IT WORKS */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px}
+.step{
+  opacity:0;transform:translateY(24px);
+  transition:opacity .6s ease,transform .6s cubic-bezier(.16,1,.3,1);
+  transition-delay:var(--d,0s);
+}
+.step.visible{opacity:1;transform:translateY(0)}
+.step-num{
+  font-family:var(--mono);font-size:11px;color:var(--accent);
+  font-weight:700;letter-spacing:.06em;margin-bottom:12px;
+}
+.step-title{font-size:16px;font-weight:600;letter-spacing:-.02em;margin-bottom:8px}
+.step-desc{font-size:14px;color:var(--muted);line-height:1.65}
+.step-line{width:40px;height:1px;background:linear-gradient(90deg,var(--accent),transparent);margin-bottom:16px}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:48px;max-width:720px}
+.pricing-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;
+  opacity:0;transform:translateY(20px);
+  transition:opacity .6s ease,transform .6s cubic-bezier(.16,1,.3,1);
+  transition-delay:var(--d,0s);
+}
+.pricing-card.visible{opacity:1;transform:translateY(0)}
+.pricing-card.featured{
+  border-color:rgba(59,130,246,.4);
+  background:linear-gradient(145deg,rgba(59,130,246,.08),var(--surface));
+  box-shadow:0 0 30px -5px rgba(59,130,246,.15);
+}
+.plan-name{font-size:13px;font-weight:600;letter-spacing:-.01em;color:var(--muted);text-transform:uppercase;font-family:var(--mono);margin-bottom:12px}
+.plan-price{font-size:36px;font-weight:800;letter-spacing:-.05em;margin-bottom:4px}
+.plan-price span{font-size:16px;font-weight:400;color:var(--muted);letter-spacing:0}
+.plan-desc{font-size:13px;color:var(--muted);margin-bottom:20px}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:24px}
+.plan-features li{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.plan-features li::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.plan-features li.inc{color:var(--text)}
+.plan-cta{
+  width:100%;padding:11px;border-radius:9px;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;border:1px solid var(--border-bright);
+  background:transparent;color:var(--muted);letter-spacing:-.01em;
+}
+.plan-cta:hover{background:rgba(255,255,255,.06);color:var(--text)}
+.plan-cta.featured{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 4px 16px -2px rgba(59,130,246,.4)}
+.plan-cta.featured:hover{background:#2563EB}
+
+/* CTA BOTTOM */
+.cta-section{
+  text-align:center;padding:80px 24px 100px;max-width:640px;margin:0 auto;
+}
+.cta-section h2{margin-bottom:14px}
+.cta-section p{font-size:16px;color:var(--muted);margin-bottom:36px}
+
+/* FOOTER */
+footer{
+  border-top:1px solid var(--border);
+  padding:32px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:13px;color:var(--muted-2);
+}
+footer a{color:var(--muted-2);text-decoration:none;transition:color .2s}
+footer a:hover{color:var(--muted)}
+.footer-links{display:flex;gap:24px}
+
+/* SPLIT layout for HOW section */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;padding:80px 24px;max-width:1100px;margin:0 auto}
+.split-text h2{margin-bottom:16px}
+.split-text p{color:var(--muted);font-size:15px;line-height:1.7;margin-bottom:24px}
+.mini-dash{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;
+  box-shadow:0 20px 50px -10px rgba(0,0,0,.7);
+  opacity:0;transform:translateX(30px);
+  transition:opacity .8s ease,transform .8s cubic-bezier(.16,1,.3,1);
+}
+.mini-dash.visible{opacity:1;transform:translateX(0)}
+.mini-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.mini-row:last-child{border:none}
+.mini-model{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px}
+.mini-avatar{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+.mini-revenue{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text)}
+.mini-bar-wrap{width:80px;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+.mini-bar{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.mini-platform-badges{display:flex;gap:4px}
+.mini-pb{font-family:var(--mono);font-size:8px;padding:2px 6px;border-radius:4px;font-weight:600}
+.mini-pb.of{background:rgba(59,130,246,.15);color:#60A5FA}
+.mini-pb.mym{background:rgba(99,102,241,.15);color:#A5B4FC}
+
+/* Responsive */
+@media(max-width:768px){
+  nav{padding:0 20px}
+  .nav-links{display:none}
+  h1{font-size:2.4rem}
+  .frame-body{grid-template-columns:1fr;padding:14px}
+  .sidebar{display:none}
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .bento{grid-template-columns:1fr;gap:10px}
+  .bento-cell.wide{grid-column:span 1}
+  .steps{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr}
+  .split{grid-template-columns:1fr;gap:32px;padding:40px 24px}
+  footer{flex-direction:column;gap:16px;text-align:center}
+  .footer-links{flex-wrap:wrap;justify-content:center}
+  .table-head,.table-row{grid-template-columns:2fr 1fr 1fr}
+  .table-head span:nth-child(4),.table-head span:nth-child(5),
+  .table-row .table-cell:nth-child(4),.table-row .table-cell:nth-child(5){display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- COLOR PICKER -->
+<div id="color-picker" style="
+  position:fixed;bottom:24px;right:24px;z-index:200;
+  display:flex;flex-direction:column;align-items:flex-end;gap:10px;
+">
+  <div id="color-swatches" style="
+    display:flex;flex-direction:column;gap:6px;
+    background:rgba(13,19,34,.92);border:1px solid rgba(255,255,255,.1);
+    border-radius:14px;padding:10px;
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    box-shadow:0 20px 50px -10px rgba(0,0,0,.8);
+    opacity:0;transform:translateY(8px) scale(.97);
+    pointer-events:none;transition:all .25s cubic-bezier(.16,1,.3,1);
+  ">
+    <div style="font-family:'Geist Mono',monospace;font-size:9px;color:#475569;letter-spacing:.08em;text-transform:uppercase;padding:0 4px 4px;font-weight:600">Couleur</div>
+  </div>
+  <button id="color-btn" onclick="togglePicker()" style="
+    width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+    background:rgba(13,19,34,.9);backdrop-filter:blur(20px);
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 24px -4px rgba(0,0,0,.6);transition:all .2s;
+  ">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="color:#94A3B8">
+      <circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="14" r="2"/><circle cx="6" cy="14" r="3"/><circle cx="11" cy="19.5" r="2"/><path d="M6 14 13.5 6.5"/><path d="M13.5 6.5 19 14"/><path d="M19 14 11 19.5"/><path d="M11 19.5 6 14"/>
+    </svg>
+  </button>
+</div>
+
+<script>
+var THEMES = [
+  {name:'Bleu',      accent:'#3B82F6', accent2:'#6366F1', cyan:'#67E8F9'},
+  {name:'Violet',    accent:'#8B5CF6', accent2:'#A855F7', cyan:'#C4B5FD'},
+  {name:'Vert',      accent:'#10B981', accent2:'#059669', cyan:'#6EE7B7'},
+  {name:'Rouge',     accent:'#EF4444', accent2:'#DC2626', cyan:'#FCA5A5'},
+  {name:'Orange',    accent:'#F97316', accent2:'#EA580C', cyan:'#FED7AA'},
+  {name:'Rose',      accent:'#EC4899', accent2:'#DB2777', cyan:'#FBCFE8'},
+  {name:'Jaune',     accent:'#EAB308', accent2:'#CA8A04', cyan:'#FEF08A'},
+  {name:'Cyan',      accent:'#06B6D4', accent2:'#0891B2', cyan:'#A5F3FC'},
+];
+
+var pickerOpen = false;
+
+function applyTheme(t) {
+  var r = document.documentElement.style;
+  r.setProperty('--accent', t.accent);
+  r.setProperty('--accent-2', t.accent2);
+  // recolor all gradient text via CSS vars
+  document.querySelectorAll('.accent').forEach(function(el){
+    el.style.background = 'linear-gradient(135deg,'+t.cyan+','+t.accent+')';
+    el.style.webkitBackgroundClip = 'text';
+    el.style.webkitTextFillColor = 'transparent';
+    el.style.backgroundClip = 'text';
+  });
+  // update btn primary
+  document.querySelectorAll('.btn-primary').forEach(function(el){
+    el.style.background = t.accent;
+    el.style.boxShadow = '0 0 0 1px '+t.accent+'55,0 8px 24px -4px '+t.accent+'60';
+  });
+  // update nav cta
+  var nc = document.querySelector('.nav-cta');
+  if(nc) nc.style.background = t.accent;
+  // update nav logo mark
+  var lm = document.querySelector('.nav-logo-mark');
+  if(lm) lm.style.background = 'linear-gradient(135deg,'+t.cyan+','+t.accent+')';
+  // update hero badge
+  var hb = document.querySelector('.hero-badge');
+  if(hb){
+    hb.style.color = t.accent;
+    hb.style.borderColor = t.accent+'55';
+    hb.style.background = t.accent+'18';
+  }
+  var hbd = document.querySelector('.hero-badge-dot');
+  if(hbd) hbd.style.background = t.accent;
+  // section labels
+  document.querySelectorAll('.section-label').forEach(function(el){ el.style.color = t.accent; });
+  // bento icons bg
+  document.querySelectorAll('.bento-icon').forEach(function(el){ el.style.background = t.accent+'18'; });
+  // step lines
+  document.querySelectorAll('.step-line').forEach(function(el){
+    el.style.background = 'linear-gradient(90deg,'+t.accent+',transparent)';
+  });
+  document.querySelectorAll('.step-num').forEach(function(el){ el.style.color = t.accent; });
+  // plan cta featured
+  document.querySelectorAll('.plan-cta.featured').forEach(function(el){
+    el.style.background = t.accent;
+    el.style.boxShadow = '0 4px 16px -2px '+t.accent+'66';
+  });
+  document.querySelectorAll('.pricing-card.featured').forEach(function(el){
+    el.style.borderColor = t.accent+'66';
+    el.style.boxShadow = '0 0 30px -5px '+t.accent+'25';
+  });
+  // trust dot
+  document.querySelectorAll('.plan-features li::before').forEach(function(el){ el.style.background = t.accent; });
+  // kpi delta
+  document.querySelectorAll('.kpi-delta:not(.neg)').forEach(function(el){ el.style.color = t.accent; });
+  // badges
+  document.querySelectorAll('.badge.of').forEach(function(el){
+    el.style.background = t.accent+'25'; el.style.color = t.cyan; el.style.borderColor = t.accent+'40';
+  });
+  // mini bars
+  document.querySelectorAll('.mini-bar').forEach(function(el){
+    el.style.background = 'linear-gradient(90deg,'+t.accent+','+t.accent2+')';
+  });
+  // dot grid color (subtle tint)
+  // agency preview badge
+  var apb = document.querySelector('#agency-preview-name');
+  if(apb){ apb.style.background='linear-gradient(135deg,'+t.cyan+','+t.accent+')'; apb.style.webkitBackgroundClip='text'; apb.style.webkitTextFillColor='transparent'; apb.style.backgroundClip='text'; }
+  // update color btn indicator
+  document.getElementById('color-btn').style.borderColor = t.accent+'60';
+  document.getElementById('color-btn').querySelector('svg').style.color = t.accent;
+}
+
+function buildSwatches() {
+  var wrap = document.getElementById('color-swatches');
+  THEMES.forEach(function(t) {
+    var btn = document.createElement('button');
+    btn.style.cssText = 'display:flex;align-items:center;gap:10px;background:transparent;border:none;cursor:pointer;padding:5px 4px;border-radius:8px;width:100%;transition:background .15s;';
+    btn.innerHTML = '<div style="width:20px;height:20px;border-radius:6px;background:linear-gradient(135deg,'+t.cyan+','+t.accent+');flex-shrink:0"></div>'
+      +'<span style="font-size:12px;color:#94A3B8;font-family:Geist,sans-serif;white-space:nowrap">'+t.name+'</span>';
+    btn.onmouseover = function(){ this.style.background='rgba(255,255,255,.06)'; };
+    btn.onmouseout = function(){ this.style.background='transparent'; };
+    btn.onclick = function(){ applyTheme(t); togglePicker(); };
+    wrap.appendChild(btn);
+  });
+}
+
+function togglePicker() {
+  pickerOpen = !pickerOpen;
+  var sw = document.getElementById('color-swatches');
+  if(pickerOpen){
+    sw.style.opacity='1'; sw.style.transform='translateY(0) scale(1)'; sw.style.pointerEvents='auto';
+  } else {
+    sw.style.opacity='0'; sw.style.transform='translateY(8px) scale(.97)'; sw.style.pointerEvents='none';
+  }
+}
+
+buildSwatches();
+</script>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-mark">C</div>
+    Cutlab
+  </div>
+  <div class="nav-links">
+    <a href="#features">Fonctionnalités</a>
+    <a href="#how">Comment ca marche</a>
+    <a href="#pricing">Tarifs</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <a href="#" class="nav-login">Connexion</a>
+    <a href="#pricing" class="nav-cta">Commencer</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-badge"><span class="hero-badge-dot"></span>OnlyFans + MYM</div>
+  <h1>Le dashboard pour <span class="accent">managers OFM</span> ambitieux</h1>
+      <p class="hero-sub">Centralisez le CA de toutes vos modeles sur OF et MYM. Analysez les performances, obtenez des conseils IA, et gérez toute votre équipe depuis un seul endroit.</p>
+  <div class="hero-actions">
+    <a href="#pricing" class="btn-primary">Creer mon dashboard</a>
+    <a href="#how" class="btn-ghost">Voir la demo</a>
+  </div>
+  <div class="hero-trust">
+    <span>Aucune CB requise</span>
+    <div class="trust-sep"></div>
+    <span>Installation en 2 min</span>
+    <div class="trust-sep"></div>
+    <span>Donnees 100% privees</span>
+  </div>
+</div>
+
+<!-- DASHBOARD PREVIEW -->
+<div class="dashboard-wrap">
+  <div class="dashboard-frame" id="dashFrame">
+    <div class="frame-topbar">
+      <div class="frame-dot r"></div>
+      <div class="frame-dot y"></div>
+      <div class="frame-dot g"></div>
+      <div class="frame-url">app.cutlab.io/dashboard</div>
+    </div>
+    <div class="frame-body">
+      <div class="sidebar">
+        <div class="sb-label">Vue</div>
+        <div class="sb-item active"><span class="sb-icon">◈</span> Overview</div>
+        <div class="sb-item"><span class="sb-icon">◎</span> Modeles</div>
+        <div class="sb-item"><span class="sb-icon">◐</span> Plateformes</div>
+        <div class="sb-item"><span class="sb-icon">▦</span> Semaines</div>
+        <div class="sb-label">Config</div>
+        <div class="sb-item"><span class="sb-icon">⊕</span> Ajouter modele</div>
+        <div class="sb-item"><span class="sb-icon">◌</span> Parametres</div>
+      </div>
+      <div class="main-panel">
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-label">CA Total</div>
+            <div class="kpi-value" style="color:var(--text)">18 240€</div>
+            <div class="kpi-delta">+12.4% vs sem. passee</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">OnlyFans</div>
+            <div class="kpi-value" style="color:#60A5FA">11 390€</div>
+            <div class="kpi-delta">+8.1%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">MYM</div>
+            <div class="kpi-value" style="color:#A5B4FC">6 850€</div>
+            <div class="kpi-delta">+19.3%</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Modeles actives</div>
+            <div class="kpi-value" style="color:var(--green)">7</div>
+            <div class="kpi-delta neg">-1 ce mois</div>
+          </div>
+        </div>
+        <div class="models-table">
+          <div class="table-head">
+            <span>Modele</span>
+            <span>OF</span>
+            <span>MYM</span>
+            <span>Total</span>
+            <span>Statut</span>
+          </div>
+          <div class="table-row">
+            <div class="model-name">
+              <div class="model-avatar" style="background:linear-gradient(135deg,#3B82F6,#6366F1)">KL</div>
+              Kali L.
+            </div>
+            <div class="table-cell">3 420€</div>
+            <div class="table-cell">1 840€</div>
+            <div class="table-cell" style="color:var(--green);font-weight:700">5 260€</div>
+            <div class="table-cell"><span class="badge both">OF+MYM</span></div>
+          </div>
+          <div class="table-row">
+            <div class="model-name">
+              <div class="model-avatar" style="background:linear-gradient(135deg,#EC4899,#8B5CF6)">NM</div>
+              Nina M.
+            </div>
+            <div class="table-cell">2 980€</div>
+            <div class="table-cell">2 110€</div>
+            <div class="table-cell" style="color:var(--green);font-weight:700">5 090€</div>
+            <div class="table-cell"><span class="badge both">OF+MYM</span></div>
+          </div>
+          <div class="table-row">
+            <div class="model-name">
+              <div class="model-avatar" style="background:linear-gradient(135deg,#10B981,#3B82F6)">AR</div>
+              Alexia R.
+            </div>
+            <div class="table-cell">2 640€</div>
+            <div class="table-cell muted">—</div>
+            <div class="table-cell" style="font-weight:700">2 640€</div>
+            <div class="table-cell"><span class="badge of">OnlyFans</span></div>
+          </div>
+          <div class="table-row">
+            <div class="model-name">
+              <div class="model-avatar" style="background:linear-gradient(135deg,#F59E0B,#EF4444)">SB</div>
+              Sofia B.
+            </div>
+            <div class="table-cell muted">—</div>
+            <div class="table-cell">900€</div>
+            <div class="table-cell" style="font-weight:700">900€</div>
+            <div class="table-cell"><span class="badge mym">MYM</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES BENTO -->
+<section id="features">
+  <div class="section-label">Fonctionnalites</div>
+  <h2>Tout ce dont un manager a besoin</h2>
+  <p class="section-sub">Cutlab centralise tes revenus OnlyFans et MYM, analyse tes performances avec l'IA, et te donne une vue claire sur ton agence — modeles, equipe, chiffres — en un seul endroit.</p>
+  <div class="bento">
+    <div class="bento-cell wide" style="--d:0s">
+      <div class="bento-icon" style="background:rgba(59,130,246,.12)">📊</div>
+      <div class="bento-title">Revenus par modele et par plateforme</div>
+      <div class="bento-desc">Visualise instantanement combien chaque modele genere sur OF et MYM. Semaine, mois, annee - tu choisis la granularite.</div>
+      <div class="mini-chart">
+        <div class="bar" style="height:35%"></div>
+        <div class="bar" style="height:55%"></div>
+        <div class="bar" style="height:45%"></div>
+        <div class="bar" style="height:70%"></div>
+        <div class="bar" style="height:60%"></div>
+        <div class="bar" style="height:85%"></div>
+        <div class="bar" style="height:75%"></div>
+        <div class="bar" style="height:95%"></div>
+        <div class="bar" style="height:80%"></div>
+        <div class="bar" style="height:100%"></div>
+      </div>
+    </div>
+    <div class="bento-cell" style="--d:.1s">
+      <div class="bento-icon" style="background:rgba(99,102,241,.12)">🔗</div>
+      <div class="bento-title">OF + MYM unifie</div>
+      <div class="bento-desc">Renseigne les stats des deux plateformes au meme endroit. Plus de jongling entre les applis.</div>
+      <div class="platform-row">
+        <div class="platform-pill of">OnlyFans</div>
+        <div class="platform-pill mym">MYM</div>
+        <div style="font-size:12px;color:var(--muted-2);font-family:var(--mono)">+ custom</div>
+      </div>
+    </div>
+    <div class="bento-cell" style="--d:.15s">
+      <div class="bento-icon" style="background:rgba(16,185,129,.1)">📅</div>
+      <div class="bento-title">Suivi hebdomadaire</div>
+      <div class="bento-desc">Remplis ton recap chaque semaine. Historique complet pour tracker la progression.</div>
+    </div>
+    <div class="bento-cell" style="--d:.2s">
+      <div class="bento-icon" style="background:rgba(245,158,11,.1)">⚡</div>
+      <div class="bento-title">Saisie rapide</div>
+      <div class="bento-desc">Interface pensee pour la vitesse. Tu renseignes un rapport complet en moins d'une minute.</div>
+    </div>
+    <div class="bento-cell" style="--d:.25s">
+      <div class="bento-icon" style="background:rgba(239,68,68,.1)">📈</div>
+      <div class="bento-title">Comparaison et tendances</div>
+      <div class="bento-desc">Semaine vs semaine precedente. Identifie tes tops performers et ceux qui stagnent.</div>
+    </div>
+    <div class="bento-cell" style="--d:.25s">
+      <div class="bento-icon" style="background:rgba(99,102,241,.12)">🤖</div>
+      <div class="bento-title">Coach IA integre</div>
+      <div class="bento-desc">Un chatbot analyse tes chiffres en temps reel et te donne des conseils concrets pour augmenter ton CA — quelles modeles booster, quelle plateforme privilegier.</div>
+    </div>
+    <div class="bento-cell" style="--d:.3s">
+      <div class="bento-icon" style="background:rgba(16,185,129,.1)">🏢</div>
+      <div class="bento-title">Organigramme equipe</div>
+      <div class="bento-desc">Visualise toute ta structure — CEO, chatters, associes, modeles. Invite tes membres par email directement depuis le dashboard.</div>
+    </div>
+    <div class="bento-cell" style="--d:.35s">
+      <div class="bento-icon" style="background:rgba(59,130,246,.1)">🔒</div>
+      <div class="bento-title">100% prive</div>
+      <div class="bento-desc">Aucune connexion aux APIs OF/MYM. Tu rentres tes chiffres manuellement. Tes donnees t'appartiennent.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SPLIT - HOW -->
+<div class="split" id="how">
+  <div class="split-text">
+    <div class="section-label">Comment ca marche</div>
+    <h2>Simple comme un tableau, puissant comme un vrai outil</h2>
+    <p>Tu ajoutes tes modeles une seule fois. Chaque semaine, tu entres les revenus par plateforme. Cutlab fait le reste : agregation, comparaison, visualisation.</p>
+    <p>Compatible OF, MYM, et toute autre source de revenu custom. Idéal pour les agences qui gèrent des portfolios de 2 à 20+ modeles.</p>
+    <a href="#pricing" class="btn-primary" style="display:inline-flex;width:fit-content">Tester gratuitement</a>
+  </div>
+  <div class="mini-dash" id="miniDash">
+    <div style="font-size:11px;color:var(--muted-2);font-family:var(--mono);letter-spacing:.06em;margin-bottom:12px;font-weight:600">CETTE SEMAINE — S26 2026</div>
+    <div class="mini-row">
+      <div class="mini-model"><div class="mini-avatar" style="background:linear-gradient(135deg,#3B82F6,#6366F1)">KL</div> Kali L.</div>
+      <div class="mini-platform-badges"><span class="mini-pb of">OF</span><span class="mini-pb mym">MYM</span></div>
+      <div class="mini-bar-wrap"><div class="mini-bar" style="width:100%"></div></div>
+      <div class="mini-revenue">5 260€</div>
+    </div>
+    <div class="mini-row">
+      <div class="mini-model"><div class="mini-avatar" style="background:linear-gradient(135deg,#EC4899,#8B5CF6)">NM</div> Nina M.</div>
+      <div class="mini-platform-badges"><span class="mini-pb of">OF</span><span class="mini-pb mym">MYM</span></div>
+      <div class="mini-bar-wrap"><div class="mini-bar" style="width:97%"></div></div>
+      <div class="mini-revenue">5 090€</div>
+    </div>
+    <div class="mini-row">
+      <div class="mini-model"><div class="mini-avatar" style="background:linear-gradient(135deg,#10B981,#3B82F6)">AR</div> Alexia R.</div>
+      <div class="mini-platform-badges"><span class="mini-pb of">OF</span></div>
+      <div class="mini-bar-wrap"><div class="mini-bar" style="width:50%"></div></div>
+      <div class="mini-revenue">2 640€</div>
+    </div>
+    <div class="mini-row">
+      <div class="mini-model"><div class="mini-avatar" style="background:linear-gradient(135deg,#F59E0B,#EF4444)">SB</div> Sofia B.</div>
+      <div class="mini-platform-badges"><span class="mini-pb mym">MYM</span></div>
+      <div class="mini-bar-wrap"><div class="mini-bar" style="width:17%"></div></div>
+      <div class="mini-revenue">900€</div>
+    </div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:11px;color:var(--muted-2);font-family:var(--mono)">CA TOTAL SEMAINE</div>
+      <div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green)">18 240€</div>
+    </div>
+  </div>
+</div>
+
+<!-- AGENCY NAME FEATURE -->
+<section id="agency" style="padding:0 24px 80px;max-width:1100px;margin:0 auto">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center">
+    <div>
+      <div class="section-label">Personnalisation</div>
+      <h2>Ton dashboard, ton agence</h2>
+      <p style="color:var(--muted);font-size:15px;line-height:1.7;margin-bottom:20px">
+        A la creation de ton compte, tu renseignes le nom de ton agence. Il s'affiche directement en haut de ton dashboard — comme si l'outil avait ete concu uniquement pour toi.
+      </p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px;font-weight:600">Conseil</div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px">✉️</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;letter-spacing:-.02em;margin-bottom:5px">Utilise l'email de ton agence</div>
+            <div style="font-size:13px;color:var(--muted);line-height:1.6">Si plusieurs personnes bossent dans ton agence, un email partagé (ex: <span style="font-family:var(--mono);color:var(--accent);font-size:12px">contact@tonagence.com</span>) te permet de partager l'accès facilement sans friction.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 20px 50px -10px rgba(0,0,0,.7)">
+      <!-- Mini topbar dashboard -->
+      <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02)">
+        <div style="width:8px;height:8px;border-radius:50%;background:#EF4444"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#F59E0B"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#10B981"></div>
+      </div>
+      <!-- Simulation header dashboard -->
+      <div style="padding:18px 20px;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="font-size:15px;font-weight:700;letter-spacing:-.03em;background:linear-gradient(135deg,#67E8F9,#3B82F6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text" id="agency-preview-name">Mon Agence</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--accent);border:1px solid rgba(59,130,246,.25);padding:2px 8px;border-radius:999px;background:rgba(59,130,246,.08)">OFM</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--muted-2)">S26 — 25 juin</div>
+        </div>
+      </div>
+      <div style="padding:16px 20px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:12px">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">CA semaine</div>
+            <div style="font-size:18px;font-weight:700;letter-spacing:-.04em;background:linear-gradient(135deg,#67E8F9,#3B82F6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">18 240€</div>
+          </div>
+          <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:12px">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--muted-2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Modeles</div>
+            <div style="font-size:18px;font-weight:700;letter-spacing:-.04em;background:linear-gradient(135deg,#67E8F9,#3B82F6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">7</div>
+          </div>
+        </div>
+        <!-- Live input preview -->
+        <div style="background:var(--surface-2);border:1px solid rgba(59,130,246,.25);border-radius:8px;padding:12px">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Nom de ton agence</div>
+          <input id="agency-input" type="text" placeholder="Ex: Nexus Agency" maxlength="24"
+            style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border-bright);border-radius:6px;padding:8px 10px;color:var(--text);font-size:13px;font-family:var(--font);outline:none"
+            oninput="document.getElementById('agency-preview-name').textContent=this.value||'Mon Agence'"
+          />
+          <div style="font-size:11px;color:var(--muted-2);margin-top:6px;font-family:var(--mono)">S'affiche en temps reel dans le header</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="steps">
+  <div class="section-label">En 3 etapes</div>
+  <h2>Operationnel en 5 minutes</h2>
+  <div class="steps">
+    <div class="step" style="--d:0s">
+      <div class="step-num">01</div>
+      <div class="step-line"></div>
+      <div class="step-title">Cree ton compte et ajoute tes modeles</div>
+      <div class="step-desc">Nom, plateformes actives (OF, MYM, autre). Pas besoin de connecter quoi que ce soit.</div>
+    </div>
+    <div class="step" style="--d:.12s">
+      <div class="step-num">02</div>
+      <div class="step-line"></div>
+      <div class="step-title">Renseigne les revenus chaque semaine</div>
+      <div class="step-desc">Tu entres le CA par modele par plateforme. 30 secondes par modele maximum.</div>
+    </div>
+    <div class="step" style="--d:.24s">
+      <div class="step-num">03</div>
+      <div class="step-line"></div>
+      <div class="step-title">Analyse et prends les bonnes decisions</div>
+      <div class="step-desc">Dashboard auto-genere. Tu vois immediatement ou est ton argent et ce qui performe.</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="section-label">Tarifs</div>
+  <h2>Un prix, tout inclus.</h2>
+  <div class="pricing-grid" style="grid-template-columns:1fr;max-width:420px">
+    <div class="pricing-card featured" style="--d:0s">
+      <div class="plan-name">Acces complet</div>
+      <div class="plan-price">14,90€<span> / mois</span></div>
+      <div class="plan-desc">Tout l'outil, sans restriction.</div>
+      <ul class="plan-features">
+        <li class="inc">Modeles illimites</li>
+        <li class="inc">OF + MYM + sources custom</li>
+        <li class="inc">Historique complet</li>
+        <li class="inc">Export CSV / PDF</li>
+        <li class="inc">Comparaisons hebdo et mensuelles</li>
+        <li class="inc">Coach IA integre — analyse et conseils</li>
+        <li class="inc">Organigramme equipe + invitation membres</li>
+        <li class="inc">Resilie quand tu veux</li>
+      </ul>
+      <button class="plan-cta featured">Commencer maintenant</button>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BOTTOM -->
+<div class="cta-section">
+  <h2>Fini les calculs dans les notes iPhone</h2>
+  <p>Tous tes chiffres, une seule interface. Commence gratuitement, upgrade quand tu veux.</p>
+  <a href="#" class="btn-primary">Creer mon compte</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="nav-logo">
+    <div class="nav-logo-mark">C</div>
+    Cutlab
+  </div>
+  <div class="footer-links">
+    <a href="#">Confidentialite</a>
+    <a href="#">CGU</a>
+    <a href="#">Contact</a>
+  </div>
+  <div style="font-family:var(--mono);font-size:11px">© 2026 Cutlab</div>
+</footer>
+
+<script>
+// Intersection Observer for scroll reveals
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting) e.target.classList.add('visible');
+  });
+}, {threshold:.15});
+
+document.querySelectorAll('#dashFrame, .bento-cell, .step, .pricing-card, #miniDash').forEach(el => {
+  observer.observe(el);
+});
+
+// Stagger bento cells with delay
+document.querySelectorAll('.bento-cell').forEach((el,i) => {
+  el.style.setProperty('--d', (i * 0.08) + 's');
+});
+document.querySelectorAll('.step').forEach((el,i) => {
+  el.style.setProperty('--d', (i * 0.12) + 's');
+});
+document.querySelectorAll('.pricing-card').forEach((el,i) => {
+  el.style.setProperty('--d', (i * 0.1) + 's');
+});
+</script>
+</body>
+</html>

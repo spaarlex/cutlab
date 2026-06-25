@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cutlab — Inscription</title>
+<script src="https://js.stripe.com/v3/"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080C14;--sf:#0D1322;--sf2:#111827;
+  --bd:rgba(255,255,255,.07);--bdb:rgba(255,255,255,.13);
+  --tx:#F1F5F9;--mu:#64748B;--mu2:#334155;
+  --ac:#3B82F6;--cy:#67E8F9;
+  --gn:#10B981;--rd:#EF4444;
+  --fn:'Geist',system-ui,sans-serif;--mo:'Geist Mono',monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--fn);-webkit-font-smoothing:antialiased}
+
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle,rgba(255,255,255,.12) 1px,transparent 1px);background-size:28px 28px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,rgba(0,0,0,.5) 0%,transparent 100%);-webkit-mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,rgba(0,0,0,.5) 0%,transparent 100%)}
+
+.wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative;z-index:1}
+
+/* LOGO */
+.logo{display:flex;align-items:center;gap:8px;margin-bottom:32px;text-decoration:none}
+.logo-mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--cy),var(--ac));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff}
+.logo-name{font-size:18px;font-weight:700;letter-spacing:-.04em;background:linear-gradient(135deg,var(--cy),var(--ac));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* STEPS */
+.steps-bar{display:flex;align-items:center;gap:8px;margin-bottom:28px}
+.step-item{display:flex;align-items:center;gap:6px;font-size:12px;font-family:var(--mo)}
+.step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;transition:all .3s}
+.step-num.done{background:var(--gn);color:#fff}
+.step-num.active{background:var(--ac);color:#fff}
+.step-num.idle{background:var(--mu2);color:var(--mu)}
+.step-label{color:var(--mu);transition:color .3s}
+.step-label.active{color:var(--tx)}
+.step-sep{width:24px;height:1px;background:var(--mu2)}
+
+/* CARD */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:28px;width:100%;max-width:420px;box-shadow:0 40px 80px -20px rgba(0,0,0,.7)}
+.card-title{font-size:20px;font-weight:700;letter-spacing:-.04em;margin-bottom:4px}
+.card-sub{font-size:13px;color:var(--mu);margin-bottom:24px;line-height:1.6}
+
+/* FORM */
+.fg{margin-bottom:14px}
+.fg label{font-size:11px;color:var(--mu);display:block;margin-bottom:5px;font-family:var(--mo);letter-spacing:.05em;text-transform:uppercase;font-weight:600}
+.fg input{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bdb);border-radius:9px;padding:11px 14px;color:var(--tx);font-size:14px;outline:none;font-family:var(--fn);transition:border-color .2s}
+.fg input:focus{border-color:rgba(59,130,246,.5);background:rgba(59,130,246,.04)}
+.fg input::placeholder{color:var(--mu2)}
+
+/* PASS STRENGTH */
+.pass-strength{height:3px;border-radius:2px;margin-top:6px;transition:all .3s;background:var(--mu2)}
+.pass-hint{font-size:11px;color:var(--mu2);margin-top:4px;font-family:var(--mo)}
+
+/* RECAP */
+.recap{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:10px;padding:14px;margin-bottom:20px}
+.recap-row{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.recap-row+.recap-row{margin-top:8px;padding-top:8px;border-top:1px solid var(--bd)}
+.recap-label{color:var(--mu)}
+.recap-val{font-family:var(--mo);font-weight:600;color:var(--tx)}
+.recap-price{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--cy),var(--ac));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* BTN */
+.btn-main{width:100%;padding:13px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .25s;font-family:var(--fn);letter-spacing:-.01em;border:none;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-main.primary{background:var(--ac);color:#fff;box-shadow:0 4px 20px -4px rgba(59,130,246,.5)}
+.btn-main.primary:hover{background:#2563EB;transform:translateY(-1px);box-shadow:0 8px 24px -4px rgba(59,130,246,.6)}
+.btn-main.primary:active{transform:translateY(0)}
+.btn-main:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:var(--mu2);font-size:11px;font-family:var(--mo)}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bd)}
+
+/* SECURITY BADGES */
+.security{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:16px}
+.sec-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mu2);font-family:var(--mo)}
+
+/* FEEDBACK */
+.fb{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:14px;display:none;font-family:var(--mo);line-height:1.5}
+.fb.err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#FCA5A5}
+.fb.ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:#6EE7B7}
+
+/* LOADER */
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SUCCESS */
+.success-wrap{text-align:center;padding:12px 0}
+.success-icon{font-size:48px;margin-bottom:16px}
+.success-title{font-size:20px;font-weight:700;letter-spacing:-.04em;margin-bottom:8px}
+.success-sub{font-size:14px;color:var(--mu);line-height:1.65}
+
+/* LOGIN LINK */
+.login-link{margin-top:16px;text-align:center;font-size:13px;color:var(--mu)}
+.login-link a{color:var(--cy);text-decoration:none;font-weight:500}
+.login-link a:hover{opacity:.8}
+
+/* CONNEXION PAGE */
+.tab-row{display:flex;gap:0;margin-bottom:24px;background:rgba(255,255,255,.04);border-radius:9px;padding:3px}
+.tab{flex:1;padding:8px;border:none;background:transparent;color:var(--mu);font-size:13px;font-weight:500;cursor:pointer;border-radius:7px;transition:all .2s;font-family:var(--fn)}
+.tab.active{background:var(--sf2);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="#" class="logo">
+    <div class="logo-mark">C</div>
+    <span class="logo-name">Cutlab</span>
+  </a>
+
+  <!-- STEPS -->
+  <div class="steps-bar" id="steps-bar">
+    <div class="step-item">
+      <div class="step-num active" id="sn1">1</div>
+      <span class="step-label active" id="sl1">Compte</span>
+    </div>
+    <div class="step-sep"></div>
+    <div class="step-item">
+      <div class="step-num idle" id="sn2">2</div>
+      <span class="step-label" id="sl2">Paiement</span>
+    </div>
+    <div class="step-sep"></div>
+    <div class="step-item">
+      <div class="step-num idle" id="sn3">3</div>
+      <span class="step-label" id="sl3">Dashboard</span>
+    </div>
+  </div>
+
+  <!-- STEP 1 — COMPTE -->
+  <div class="card" id="step1">
+    <div class="tab-row">
+      <button class="tab active" onclick="showTab('signup')">Creer un compte</button>
+      <button class="tab" onclick="showTab('login')">Connexion</button>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="tab-signup">
+      <div class="card-title">Creer ton compte</div>
+      <div class="card-sub">Tu seras redirige vers le paiement apres.</div>
+      <div class="fb" id="fb1"></div>
+      <div class="fg"><label>Nom de l'agence</label><input type="text" id="s-agency" placeholder="Mon Agence OFM"></div>
+      <div class="fg"><label>Email</label><input type="email" id="s-email" placeholder="contact@monagence.com"></div>
+      <div class="fg">
+        <label>Mot de passe</label>
+        <input type="password" id="s-pass" placeholder="8 caracteres minimum" oninput="checkPass(this.value)">
+        <div class="pass-strength" id="pass-bar"></div>
+        <div class="pass-hint" id="pass-hint">Minimum 8 caracteres</div>
+      </div>
+      <button class="btn-main primary" id="btn-signup" onclick="doSignup()">
+        Continuer vers le paiement
+        <svg style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+      <div class="login-link">Deja un compte ? <a href="#" onclick="showTab('login')">Se connecter</a></div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="tab-login" style="display:none">
+      <div class="card-title">Connexion</div>
+      <div class="card-sub">Acces a ton dashboard Cutlab.</div>
+      <div class="fb" id="fb-login"></div>
+      <div class="fg"><label>Email</label><input type="email" id="l-email" placeholder="contact@monagence.com"></div>
+      <div class="fg"><label>Mot de passe</label><input type="password" id="l-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn-main primary" id="btn-login" onclick="doLogin()">Se connecter</button>
+      <div class="login-link">Pas encore de compte ? <a href="#" onclick="showTab('signup')">S'inscrire</a></div>
+    </div>
+  </div>
+
+  <!-- STEP 2 — PAIEMENT -->
+  <div class="card" id="step2" style="display:none">
+    <div class="card-title">Finalise ton abonnement</div>
+    <div class="card-sub">Tu vas etre redirige vers Stripe pour payer en toute securite.</div>
+    <div class="fb" id="fb2"></div>
+    <div class="recap">
+      <div class="recap-row">
+        <span class="recap-label">Produit</span>
+        <span class="recap-val">Cutlab Dashboard OFM</span>
+      </div>
+      <div class="recap-row">
+        <span class="recap-label">Facturation</span>
+        <span class="recap-val">Mensuelle</span>
+      </div>
+      <div class="recap-row">
+        <span class="recap-label">Total</span>
+        <span class="recap-price">14,90€ / mois</span>
+      </div>
+    </div>
+    <button class="btn-main primary" id="btn-pay" onclick="doCheckout()">
+      <svg style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Payer 14,90€ / mois
+    </button>
+    <div class="security">
+      <div class="sec-item">
+        <svg style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Paiement securise
+      </div>
+      <div class="sec-item">
+        <svg style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Stripe certifie
+      </div>
+      <div class="sec-item">
+        <svg style="width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        Resiliable a tout moment
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 — SUCCESS -->
+  <div class="card" id="step3" style="display:none">
+    <div class="success-wrap">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">Bienvenue sur Cutlab !</div>
+      <div class="success-sub">Ton compte est actif. Tu vas etre redirige vers ton dashboard dans quelques secondes.</div>
+      <div style="margin-top:24px">
+        <button class="btn-main primary" onclick="goDashboard()">Acceder au dashboard</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var SB_URL  = 'https://ujqqbejvgxwlinkbgdrn.supabase.co';
+var SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVqcXFiZWp2Z3h3bGlua2JnZHJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0OTM5ODEsImV4cCI6MjA5NzA2OTk4MX0.Qcbpw3Nhkmk3MaXM9c1_OxVT7xQg-HRr9WkXO0xDgV0';
+var PRICE_ID = 'price_1TmKwCJmynLdScYrUsIonjp2';
+var stripe = Stripe('pk_live_51Th4S2JmynLdScYrYevxH9OJVyMOToEATNOj2PyuJmi9RcUuGdAKtZvV27wWAaqHiyYl3avR67Ur1JWgvg0689LW00vTMLEEee');
+var currentUser = null;
+
+// ── TABS ────────────────────────────────────────────────────
+function showTab(t) {
+  document.getElementById('tab-signup').style.display = t==='signup'?'block':'none';
+  document.getElementById('tab-login').style.display  = t==='login' ?'block':'none';
+  document.querySelectorAll('.tab').forEach(function(b,i){ b.classList.toggle('active', (t==='signup'&&i===0)||(t==='login'&&i===1)); });
+}
+
+// ── PASSWORD STRENGTH ───────────────────────────────────────
+function checkPass(v) {
+  var bar = document.getElementById('pass-bar');
+  var hint = document.getElementById('pass-hint');
+  var score = 0;
+  if (v.length >= 8)  score++;
+  if (v.length >= 12) score++;
+  if (/[A-Z]/.test(v)) score++;
+  if (/[0-9]/.test(v)) score++;
+  if (/[^A-Za-z0-9]/.test(v)) score++;
+  var colors = ['#EF4444','#F97316','#EAB308','#10B981','#10B981'];
+  var labels = ['Trop court','Faible','Moyen','Bon','Excellent'];
+  bar.style.width = (score*20)+'%';
+  bar.style.background = colors[Math.max(0,score-1)];
+  hint.textContent = v.length===0 ? 'Minimum 8 caracteres' : labels[Math.max(0,score-1)];
+  hint.style.color = v.length===0 ? 'var(--mu2)' : colors[Math.max(0,score-1)];
+}
+
+// ── FEEDBACK ────────────────────────────────────────────────
+function showFb(id, msg, type) {
+  var el = document.getElementById(id);
+  el.textContent = msg; el.className = 'fb ' + type; el.style.display = 'block';
+}
+function hideFb(id) { document.getElementById(id).style.display='none'; }
+
+// ── SUPABASE CALLS ──────────────────────────────────────────
+async function sbFetch(path, method, body) {
+  var res = await fetch(SB_URL + path, {
+    method: method||'GET',
+    headers: { 'Content-Type':'application/json', 'apikey':SB_ANON, 'Authorization':'Bearer '+SB_ANON },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  return res.json();
+}
+
+// ── SIGNUP ──────────────────────────────────────────────────
+async function doSignup() {
+  var agency = document.getElementById('s-agency').value.trim();
+  var email  = document.getElementById('s-email').value.trim();
+  var pass   = document.getElementById('s-pass').value;
+  hideFb('fb1');
+
+  if (!agency) { showFb('fb1','Renseigne le nom de ton agence.','err'); return; }
+  if (!email)  { showFb('fb1','Renseigne ton email.','err'); return; }
+  if (pass.length < 8) { showFb('fb1','Le mot de passe doit faire au moins 8 caracteres.','err'); return; }
+
+  var btn = document.getElementById('btn-signup');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Creation du compte...';
+
+  try {
+    var data = await sbFetch('/auth/v1/signup', 'POST', { email:email, password:pass, data:{ agency_name:agency } });
+    if (data.error) { showFb('fb1', data.error.message||'Erreur lors de la creation.','err'); btn.disabled=false; btn.innerHTML='Continuer vers le paiement <svg style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>'; return; }
+    currentUser = data.user || data;
+    goToStep2();
+  } catch(e) {
+    showFb('fb1','Erreur reseau. Reessaie.','err');
+    btn.disabled=false; btn.innerHTML='Continuer vers le paiement';
+  }
+}
+
+// ── LOGIN ────────────────────────────────────────────────────
+async function doLogin() {
+  var email = document.getElementById('l-email').value.trim();
+  var pass  = document.getElementById('l-pass').value;
+  hideFb('fb-login');
+
+  if (!email||!pass) { showFb('fb-login','Remplis tous les champs.','err'); return; }
+
+  var btn = document.getElementById('btn-login');
+  btn.disabled=true; btn.innerHTML='<div class="spinner"></div> Connexion...';
+
+  try {
+    var data = await sbFetch('/auth/v1/token?grant_type=password','POST',{email:email,password:pass});
+    if (data.error) { showFb('fb-login',data.error.message||'Email ou mot de passe incorrect.','err'); btn.disabled=false; btn.textContent='Se connecter'; return; }
+    localStorage.setItem('sb_token', data.access_token);
+    goToDashboard();
+  } catch(e) {
+    showFb('fb-login','Erreur reseau.','err');
+    btn.disabled=false; btn.textContent='Se connecter';
+  }
+}
+
+// ── STEPS ────────────────────────────────────────────────────
+function goToStep2() {
+  document.getElementById('step1').style.display='none';
+  document.getElementById('step2').style.display='block';
+  // update steps bar
+  document.getElementById('sn1').className='step-num done'; document.getElementById('sn1').innerHTML='✓';
+  document.getElementById('sn2').className='step-num active';
+  document.getElementById('sl2').className='step-label active';
+}
+
+// ── STRIPE CHECKOUT ──────────────────────────────────────────
+async function doCheckout() {
+  var btn = document.getElementById('btn-pay');
+  btn.disabled=true; btn.innerHTML='<div class="spinner"></div> Redirection vers Stripe...';
+  hideFb('fb2');
+
+  try {
+    var email = document.getElementById('s-email').value.trim();
+    var result = await stripe.redirectToCheckout({
+      lineItems: [{ price: PRICE_ID, quantity: 1 }],
+      mode: 'subscription',
+      successUrl: window.location.origin + '/dashboard?success=1',
+      cancelUrl:  window.location.origin + '/signup?cancelled=1',
+      customerEmail: email
+    });
+    if (result.error) {
+      showFb('fb2', result.error.message, 'err');
+      btn.disabled=false; btn.innerHTML='<svg style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Payer 14,90€ / mois';
+    }
+  } catch(e) {
+    showFb('fb2','Erreur lors de la redirection. Reessaie.','err');
+    btn.disabled=false;
+  }
+}
+
+// ── SUCCESS / DASHBOARD ──────────────────────────────────────
+function goDashboard() {
+  // ici rediriger vers dashboard.html
+  alert('Redirection vers le dashboard — a brancher sur la vraie URL');
+}
+
+function goToDashboard() {
+  goDashboard();
+}
+
+// ── CHECK URL PARAMS ─────────────────────────────────────────
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('success') === '1') {
+    document.getElementById('step1').style.display='none';
+    document.getElementById('steps-bar').style.display='none';
+    document.getElementById('step3').style.display='block';
+  }
+  if (params.get('cancelled') === '1') {
+    showFb('fb2','Paiement annule. Tu peux reessayer quand tu veux.','err');
+    goToStep2();
+  }
+})();
+</script>
+</body>
+</html>
